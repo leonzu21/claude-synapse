@@ -7,7 +7,7 @@
   "author": "Iulian Leon",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/iulianleon/synapse.git"
+    "url": "git+https://github.com/leonzu21/synapse.git"
   },
   "bin": {
     "synapse": "./bin/synapse.mjs"
