@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  --bg-primary: #08060f;
+  --bg-secondary: #12101e;
+  --bg-card: #1a1828;
+  --border: #2a2640;
+  --border-light: #3a3a4e;
+  --text-primary: #e0e0e8;
+  --text-dim: #8888a0;
+  --text-muted: #555566;
+  --agent-idle: #7080a0;
+  --agent-thinking: #a855f7;
+  --agent-working: #22d65e;
+  --agent-completed: #40a8f5;
+  --agent-error: #ff4455;
+  --agent-warning: #ffaa22;
+}
+
+body {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  image-rendering: auto;
+}
+
+code, pre, .font-mono, [class*="font-mono"] {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-light);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Hide scrollbar but keep scrolling */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Cerebro dot grid background */
+.cerebro-grid {
+  background-color: var(--bg-primary);
+  background-image: radial-gradient(circle, #1a2030 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Cerebro mode typography (kept for backward compat with class usage) */
+.cerebro-mode {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  image-rendering: auto;
+}
+
+.cerebro-mode code,
+.cerebro-mode pre,
+.cerebro-mode .font-mono,
+.cerebro-mode [class*="font-mono"] {
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace !important;
+}

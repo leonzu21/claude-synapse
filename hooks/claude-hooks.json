@@ -1,0 +1,114 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/PreToolUse -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook PreToolUse --arg sid $CLAUDE_SESSION_ID --arg tn $TOOL_NAME --argjson ti \"${TOOL_INPUT:-{}}\" '. + {hook_event_name: $hook, session_id: $sid, tool_name: $tn, tool_input: $ti, tool_use_id: env.TOOL_USE_ID, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/PostToolUse -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook PostToolUse --arg sid $CLAUDE_SESSION_ID --arg tn $TOOL_NAME '. + {hook_event_name: $hook, session_id: $sid, tool_name: $tn, tool_use_id: env.TOOL_USE_ID, tool_response: env.TOOL_RESPONSE, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/Notification -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook Notification --arg sid $CLAUDE_SESSION_ID --arg msg \"$NOTIFICATION_MESSAGE\" --arg title \"$NOTIFICATION_TITLE\" '. + {hook_event_name: $hook, session_id: $sid, message: $msg, title: $title, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/Stop -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook Stop --arg sid $CLAUDE_SESSION_ID '. + {hook_event_name: $hook, session_id: $sid, last_assistant_message: env.LAST_ASSISTANT_MESSAGE, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/SubagentStart -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook SubagentStart --arg sid $CLAUDE_SESSION_ID '. + {hook_event_name: $hook, session_id: $sid, agent_id: env.AGENT_ID, agent_type: env.AGENT_TYPE, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/SubagentStop -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook SubagentStop --arg sid $CLAUDE_SESSION_ID '. + {hook_event_name: $hook, session_id: $sid, agent_id: env.AGENT_ID, agent_type: env.AGENT_TYPE, last_assistant_message: env.LAST_ASSISTANT_MESSAGE, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/SessionStart -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook SessionStart --arg sid $CLAUDE_SESSION_ID '. + {hook_event_name: $hook, session_id: $sid, source: env.SESSION_SOURCE, model: env.CLAUDE_MODEL, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/SessionEnd -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook SessionEnd --arg sid $CLAUDE_SESSION_ID '. + {hook_event_name: $hook, session_id: $sid, reason: env.SESSION_END_REASON, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/UserPromptSubmit -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook UserPromptSubmit --arg sid $CLAUDE_SESSION_ID --arg prompt \"$USER_PROMPT\" '. + {hook_event_name: $hook, session_id: $sid, prompt: $prompt, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "curl -s -X POST http://localhost:4800/api/hooks/PreCompact -H 'Content-Type: application/json' -d \"$(echo '{}' | jq --arg hook PreCompact --arg sid $CLAUDE_SESSION_ID '. + {hook_event_name: $hook, session_id: $sid, trigger: env.COMPACT_TRIGGER, permission_mode: env.CLAUDE_PERMISSION_MODE, cwd: env.CLAUDE_CWD, transcript_path: env.CLAUDE_TRANSCRIPT_PATH}')\""
+          }
+        ]
+      }
+    ]
+  }
+}

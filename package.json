@@ -1,0 +1,31 @@
+{
+  "name": "synapse",
+  "version": "1.0.0",
+  "description": "Neural network visualization for Claude Code agent sessions",
+  "keywords": ["claude", "claude-code", "agent", "visualization", "neural-network", "hooks"],
+  "license": "MIT",
+  "author": "Iulian Leon",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iulianleon/synapse.git"
+  },
+  "bin": {
+    "synapse": "./bin/synapse.mjs"
+  },
+  "packageManager": "npm@10.9.4",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "start": "node bin/synapse.mjs"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  }
+}
