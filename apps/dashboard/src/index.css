@@ -56,24 +56,24 @@ code, pre, .font-mono, [class*="font-mono"] {
   scrollbar-width: none;
 }
 
-/* Cerebro dot grid background */
-.cerebro-grid {
+/* Synapse dot grid background */
+.synapse-grid {
   background-color: var(--bg-primary);
   background-image: radial-gradient(circle, #1a2030 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* Cerebro mode typography (kept for backward compat with class usage) */
-.cerebro-mode {
+/* Synapse mode typography */
+.synapse-mode {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   image-rendering: auto;
 }
 
-.cerebro-mode code,
-.cerebro-mode pre,
-.cerebro-mode .font-mono,
-.cerebro-mode [class*="font-mono"] {
+.synapse-mode code,
+.synapse-mode pre,
+.synapse-mode .font-mono,
+.synapse-mode [class*="font-mono"] {
   font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace !important;
 }

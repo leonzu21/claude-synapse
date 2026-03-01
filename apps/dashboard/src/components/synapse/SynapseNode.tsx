@@ -2,7 +2,7 @@ import { memo, useState, useEffect, useRef } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppStore } from '../../state/store';
-import { COMPLETED_FADE_MS } from '../../hooks/useCerebroLayout';
+import { COMPLETED_FADE_MS } from '../../hooks/useSynapseLayout';
 import { stateLabels } from '../../labels/modeLabels';
 import { IconWarning, IconTool } from '../PixelIcons';
 
@@ -45,7 +45,7 @@ function formatDuration(start: number, end: number | null): string {
   return `${(ms / 60000).toFixed(1)}m`;
 }
 
-export interface CerebroNodeData {
+export interface SynapseNodeData {
   agentId: string;
   agentName: string;
   agentType: string;
@@ -80,8 +80,85 @@ function formatModel(model: string | null): string {
   return m.charAt(0).toUpperCase() + m.slice(1);
 }
 
-function CerebroNodeComponent({ data }: NodeProps) {
-  const d = data as CerebroNodeData;
+/** Brain SVG watermark for the root node */
+function BrainIcon({ color, size = 48 }: { color: string; size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Left hemisphere */}
+      <path
+        d="M30 12c-4-1-8 1-10 4-3 4-3 8-1 12-3 1-5 4-5 7 0 4 2 6 5 7-1 3 0 6 2 8 2 3 5 4 8 3"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.5"
+      />
+      {/* Right hemisphere */}
+      <path
+        d="M34 12c4-1 8 1 10 4 3 4 3 8 1 12 3 1 5 4 5 7 0 4-2 6-5 7 1 3 0 6-2 8-2 3-5 4-8 3"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.5"
+      />
+      {/* Brain stem */}
+      <path
+        d="M32 53v5"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        opacity="0.4"
+      />
+      {/* Left folds */}
+      <path
+        d="M22 22c4 1 7-1 8-4M19 32c5 0 8-1 10-4M22 41c3-1 6-2 7-5"
+        stroke={color}
+        strokeWidth="1"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.3"
+      />
+      {/* Right folds */}
+      <path
+        d="M42 22c-4 1-7-1-8-4M45 32c-5 0-8-1-10-4M42 41c-3-1-6-2-7-5"
+        stroke={color}
+        strokeWidth="1"
+        strokeLinecap="round"
+        fill="none"
+        opacity="0.3"
+      />
+      {/* Central fissure */}
+      <path
+        d="M32 12v41"
+        stroke={color}
+        strokeWidth="1"
+        strokeLinecap="round"
+        opacity="0.25"
+        strokeDasharray="2 3"
+      />
+    </svg>
+  );
+}
+
+/** Invisible centered handle — edges radiate from node center */
+const centeredHandle: React.CSSProperties = {
+  background: 'transparent',
+  border: 'none',
+  width: 1,
+  height: 1,
+  minWidth: 0,
+  minHeight: 0,
+  top: '50%',
+  left: '50%',
+  right: 'auto',
+  bottom: 'auto',
+  transform: 'translate(-50%, -50%)',
+  pointerEvents: 'none',
+};
+
+function SynapseNodeComponent({ data }: NodeProps) {
+  const d = data as SynapseNodeData;
   const setSelectedAgent = useAppStore((s) => s.setSelectedAgent);
   const toggleCollapse = useAppStore((s) => s.toggleCollapse);
   const setHoveredNode = useAppStore((s) => s.setHoveredNode);
@@ -99,7 +176,7 @@ function CerebroNodeComponent({ data }: NodeProps) {
     return () => clearTimeout(timer);
   }, [isDying, d.isRoot]);
 
-  // Phase 2: Ripple on state change
+  // Ripple on state change
   const prevStateRef = useRef(d.visualState);
   const [ripple, setRipple] = useState(false);
   useEffect(() => {
@@ -134,27 +211,18 @@ function CerebroNodeComponent({ data }: NodeProps) {
       onMouseEnter={() => setHoveredNode(d.agentId)}
       onMouseLeave={() => setHoveredNode(null)}
     >
-      {/* Source handle (right) */}
-      <Handle
-        type="source"
-        position={Position.Right}
-        style={{ background: '#334155', border: 'none', width: 6, height: 6, opacity: fading ? 0 : 1, transition: 'opacity 0.5s' }}
-      />
-      {/* Target handle (left) */}
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{ background: '#334155', border: 'none', width: 6, height: 6, opacity: fading ? 0 : 1, transition: 'opacity 0.5s' }}
-      />
+      {/* Centered handles for radial layout */}
+      <Handle type="source" position={Position.Right} style={centeredHandle} />
+      <Handle type="target" position={Position.Left} style={centeredHandle} />
 
       {/* Ripple ring */}
       <AnimatePresence>
         {ripple && (
           <motion.div
-            className="absolute inset-0 rounded-sm pointer-events-none"
+            className="absolute inset-0 pointer-events-none"
             style={{
               border: `2px solid ${accent}`,
-              borderRadius: '2px',
+              borderRadius: d.isRoot ? '50%' : '2px',
             }}
             initial={{ scale: 1, opacity: 0.8 }}
             animate={{ scale: 1.6, opacity: 0 }}
@@ -166,19 +234,32 @@ function CerebroNodeComponent({ data }: NodeProps) {
 
       <motion.div
         className="relative overflow-hidden"
-        style={{
+        style={d.isRoot ? {
+          backgroundColor: '#0f172a',
+          borderRadius: '50%',
+          border: `2px solid ${d.isSelected ? color : d.isOnCriticalPath ? '#f59e0b' : '#1e293b'}`,
+          width: 140,
+          height: 140,
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        } : {
           backgroundColor: '#0f172a',
           borderRadius: '2px',
           border: `1px solid ${d.isSelected ? color : d.isOnCriticalPath ? '#f59e0b' : '#1e293b'}`,
           borderLeft: `3px solid ${accent}`,
-          minWidth: d.isRoot ? 180 : 140,
+          minWidth: 140,
           padding: '8px 10px',
+          display: 'flex',
+          flexDirection: 'column',
         }}
         animate={
           fading
             ? { opacity: 0 }
             : isActive
-            ? { boxShadow: [`0 0 0px ${accent}40`, `0 0 8px ${accent}60`, `0 0 0px ${accent}40`] }
+            ? { boxShadow: [`0 0 0px ${accent}40`, `0 0 12px ${accent}60`, `0 0 0px ${accent}40`] }
             : { boxShadow: 'none' }
         }
         transition={
@@ -189,26 +270,34 @@ function CerebroNodeComponent({ data }: NodeProps) {
             : undefined
         }
       >
+        {/* Brain watermark for root */}
+        {d.isRoot && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ opacity: 0.5 }}>
+            <BrainIcon color={accent} size={110} />
+          </div>
+        )}
+
         {/* Header: icon + name + collapse toggle */}
-        <div className="flex items-center gap-1.5 mb-1">
+        <div className="flex items-center gap-1.5 mb-1" style={{ justifyContent: d.isRoot ? 'center' : undefined, position: 'relative', zIndex: 1 }}>
           <span style={{ color: accent, fontSize: '10px' }}>
             {toolIcon(d.agentType || d.agentName)}
           </span>
           <span
             style={{
-              fontSize: '10px',
+              fontSize: d.isRoot ? '11px' : '10px',
               fontWeight: 600,
               color: '#e2e8f0',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
-              maxWidth: d.isRoot ? '140px' : '100px',
-              flex: 1,
+              maxWidth: d.isRoot ? '80px' : '100px',
+              flex: d.isRoot ? undefined : 1,
+              textAlign: d.isRoot ? 'center' : undefined,
             }}
           >
             {displayName}
           </span>
-          {d.hasChildren && (
+          {d.hasChildren && !d.isRoot && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
@@ -237,7 +326,7 @@ function CerebroNodeComponent({ data }: NodeProps) {
         </div>
 
         {/* Status chip */}
-        <div className="flex items-center gap-1.5 mb-1">
+        <div className="flex items-center gap-1.5 mb-1" style={{ justifyContent: d.isRoot ? 'center' : undefined, position: 'relative', zIndex: 1 }}>
           <span
             style={{
               width: '6px',
@@ -251,13 +340,15 @@ function CerebroNodeComponent({ data }: NodeProps) {
           <span style={{ fontSize: '9px', color, fontWeight: 500 }}>
             {labels[d.visualState] || d.visualState.toUpperCase()}
           </span>
-          <span style={{ fontSize: '8px', color: '#64748b', marginLeft: 'auto' }}>
-            {formatDuration(d.startedAt, d.completedAt)}
-          </span>
+          {!d.isRoot && (
+            <span style={{ fontSize: '8px', color: '#64748b', marginLeft: 'auto' }}>
+              {formatDuration(d.startedAt, d.completedAt)}
+            </span>
+          )}
         </div>
 
         {/* Detail text */}
-        {d.latestDetail && (
+        {d.latestDetail && !d.isRoot && (
           <div
             style={{
               fontSize: '8px',
@@ -274,7 +365,7 @@ function CerebroNodeComponent({ data }: NodeProps) {
 
         {/* Stats row — root nodes */}
         {d.isRoot && (
-          <div className="flex items-center gap-2 mt-1" style={{ fontSize: '8px', color: '#64748b' }}>
+          <div className="flex items-center gap-2 mt-1" style={{ fontSize: '8px', color: '#64748b', position: 'relative', zIndex: 1 }}>
             <span className="flex items-center gap-0.5" title="Tool calls">
               <IconTool color="#64748b" size={10} /> {d.toolCount}
             </span>
@@ -314,4 +405,4 @@ function CerebroNodeComponent({ data }: NodeProps) {
   );
 }
 
-export default memo(CerebroNodeComponent);
+export default memo(SynapseNodeComponent);

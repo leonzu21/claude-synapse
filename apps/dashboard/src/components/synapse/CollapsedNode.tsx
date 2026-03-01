@@ -14,6 +14,22 @@ export interface CollapsedNodeData {
   [key: string]: unknown;
 }
 
+/** Invisible centered handle — edges radiate from node center */
+const centeredHandle: React.CSSProperties = {
+  background: 'transparent',
+  border: 'none',
+  width: 1,
+  height: 1,
+  minWidth: 0,
+  minHeight: 0,
+  top: '50%',
+  left: '50%',
+  right: 'auto',
+  bottom: 'auto',
+  transform: 'translate(-50%, -50%)',
+  pointerEvents: 'none',
+};
+
 function CollapsedNodeComponent({ data }: NodeProps) {
   const d = data as CollapsedNodeData;
   const toggleCollapse = useAppStore((s) => s.toggleCollapse);
@@ -34,11 +50,7 @@ function CollapsedNodeComponent({ data }: NodeProps) {
       }}
       onClick={() => toggleCollapse(d.parentAgentId)}
     >
-      <Handle
-        type="target"
-        position={Position.Left}
-        style={{ background: '#334155', border: 'none', width: 6, height: 6 }}
-      />
+      <Handle type="target" position={Position.Left} style={centeredHandle} />
 
       {/* Stacked rectangles effect */}
       <div

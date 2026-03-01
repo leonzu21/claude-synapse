@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import CerebroCanvas from './components/cerebro/CerebroCanvas';
-import TimelineWaterfall from './components/cerebro/TimelineWaterfall';
+import SynapseCanvas from './components/synapse/SynapseCanvas';
+import TimelineWaterfall from './components/synapse/TimelineWaterfall';
 import ActivityFeed from './components/sidebar/ActivityFeed';
 import AgentDetail from './components/sidebar/AgentDetail';
 import SessionPicker from './components/controls/SessionPicker';
@@ -17,10 +17,10 @@ export default function App() {
   useSocket();
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [cerebroView, setCerebroView] = useState<'graph' | 'timeline'>('graph');
+  const [viewMode, setViewMode] = useState<'graph' | 'timeline'>('graph');
 
   return (
-    <div className="h-screen flex flex-col cerebro-mode" style={{ backgroundColor: 'var(--bg-primary)' }}>
+    <div className="h-screen flex flex-col synapse-mode" style={{ backgroundColor: 'var(--bg-primary)' }}>
       {/* Header bar */}
       <header
         className="min-h-[40px] flex items-center gap-2 px-3 py-1 border-b-2 flex-shrink-0 flex-wrap"
@@ -37,27 +37,27 @@ export default function App() {
 
         <SimulateButton />
 
-        {/* Cerebro view tabs */}
+        {/* View mode tabs */}
         <div className="flex flex-shrink-0">
           <button
             className="text-[12px] font-bold uppercase px-1.5 py-0.5 border"
             style={{
-              color: cerebroView === 'graph' ? '#7c3aed' : 'var(--text-muted)',
+              color: viewMode === 'graph' ? '#7c3aed' : 'var(--text-muted)',
               borderColor: '#334155',
-              backgroundColor: cerebroView === 'graph' ? '#1e1b4b' : 'transparent',
+              backgroundColor: viewMode === 'graph' ? '#1e1b4b' : 'transparent',
             }}
-            onClick={() => setCerebroView('graph')}
+            onClick={() => setViewMode('graph')}
           >
             GRAPH
           </button>
           <button
             className="text-[12px] font-bold uppercase px-1.5 py-0.5 border border-l-0"
             style={{
-              color: cerebroView === 'timeline' ? '#7c3aed' : 'var(--text-muted)',
+              color: viewMode === 'timeline' ? '#7c3aed' : 'var(--text-muted)',
               borderColor: '#334155',
-              backgroundColor: cerebroView === 'timeline' ? '#1e1b4b' : 'transparent',
+              backgroundColor: viewMode === 'timeline' ? '#1e1b4b' : 'transparent',
             }}
-            onClick={() => setCerebroView('timeline')}
+            onClick={() => setViewMode('timeline')}
           >
             TIMELINE
           </button>
@@ -90,14 +90,14 @@ export default function App() {
         <main className="flex-1 relative">
           <AnimatePresence mode="wait">
             <motion.div
-              key={cerebroView}
+              key={viewMode}
               className="absolute inset-0"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
             >
-              {cerebroView === 'timeline' ? <TimelineWaterfall /> : <CerebroCanvas />}
+              {viewMode === 'timeline' ? <TimelineWaterfall /> : <SynapseCanvas />}
             </motion.div>
           </AnimatePresence>
         </main>

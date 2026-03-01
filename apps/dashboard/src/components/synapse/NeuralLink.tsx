@@ -1,6 +1,6 @@
 import { memo, useState, useEffect, useRef, useCallback } from 'react';
 import { type EdgeProps } from '@xyflow/react';
-import { COMPLETED_FADE_MS } from '../../hooks/useCerebroLayout';
+import { COMPLETED_FADE_MS } from '../../hooks/useSynapseLayout';
 import EdgeParticle from './EdgeParticle';
 
 interface NeuralLinkData {
@@ -17,10 +17,42 @@ const edgeColors = {
   sub_agent: { base: '#7c3aed', active: '#a78bfa' },
 };
 
+/** Radial-aware bezier: works for any direction between source and target */
 function buildBezierPath(sx: number, sy: number, tx: number, ty: number): string {
   const dx = tx - sx;
-  const offset = Math.max(Math.abs(dx) * 0.4, 40);
-  return `M ${sx} ${sy} C ${sx + offset} ${sy}, ${tx - offset} ${ty}, ${tx} ${ty}`;
+  const dy = ty - sy;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+  // Perpendicular unit vector for a subtle arc
+  const nx = -dy / dist;
+  const ny = dx / dist;
+  const bow = dist * 0.12;
+
+  // Control points at 1/3 and 2/3 along the line, bowed perpendicular
+  const cx1 = sx + dx / 3 + nx * bow;
+  const cy1 = sy + dy / 3 + ny * bow;
+  const cx2 = sx + (dx * 2) / 3 + nx * bow;
+  const cy2 = sy + (dy * 2) / 3 + ny * bow;
+
+  return `M ${sx} ${sy} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${tx} ${ty}`;
+}
+
+/** Relative version of the bezier (for animateMotion particles) */
+function buildRelativeBezierPath(sx: number, sy: number, tx: number, ty: number): string {
+  const dx = tx - sx;
+  const dy = ty - sy;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+  const nx = -dy / dist;
+  const ny = dx / dist;
+  const bow = dist * 0.12;
+
+  const cx1 = dx / 3 + nx * bow;
+  const cy1 = dy / 3 + ny * bow;
+  const cx2 = (dx * 2) / 3 + nx * bow;
+  const cy2 = (dy * 2) / 3 + ny * bow;
+
+  return `M 0 0 C ${cx1} ${cy1}, ${cx2} ${cy2}, ${dx} ${dy}`;
 }
 
 function NeuralLinkComponent({
@@ -68,7 +100,7 @@ function NeuralLinkComponent({
     }
   }, []);
 
-  // Detect completion transition → trigger pulse
+  // Detect completion transition -> trigger pulse
   useEffect(() => {
     if (targetState === 'completed' && prevTargetState.current !== 'completed') {
       setPulsing(true);
@@ -81,7 +113,7 @@ function NeuralLinkComponent({
 
   const edgePath = buildBezierPath(sourceX, sourceY, targetX, targetY);
 
-  // Weight → stroke width: max(1, min(4, 1 + log2(weight + 1)))
+  // Weight -> stroke width: max(1, min(4, 1 + log2(weight + 1)))
   const strokeWidth = Math.max(1, Math.min(4, 1 + Math.log2(weight + 1)));
 
   // Colors
@@ -94,10 +126,7 @@ function NeuralLinkComponent({
   const opacity = fading ? 0 : criticalPathDimmed ? 0.15 : animated ? 0.9 : 0.5;
   const fadeTransition = `opacity ${COMPLETED_FADE_MS / 1000}s ease-out`;
 
-  // Particle path needs to be relative for animateMotion
-  const particlePath = buildBezierPath(sourceX, sourceY, targetX, targetY);
-  // animateMotion uses the same absolute path — SVG handles it
-  const relativeParticlePath = `M 0 0 C ${Math.max(Math.abs(targetX - sourceX) * 0.4, 40)} 0, ${targetX - sourceX - Math.max(Math.abs(targetX - sourceX) * 0.4, 40)} ${targetY - sourceY}, ${targetX - sourceX} ${targetY - sourceY}`;
+  const relativeParticlePath = buildRelativeBezierPath(sourceX, sourceY, targetX, targetY);
 
   return (
     <g>

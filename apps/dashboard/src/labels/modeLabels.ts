@@ -40,7 +40,7 @@ export const sessionLabels: Record<string, string> = {
 
 // Header / app-level labels
 export const headerLabels: Record<string, string> = {
-  title: '[*] CEREBRO',
+  title: '[*] SYNAPSE',
   sidebarOpen: '[-] CLOSE LOG',
   sidebarClosed: '[+] EVENT LOG',
   emptyTitle: 'NO ACTIVE AGENTS',

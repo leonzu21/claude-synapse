@@ -9,18 +9,18 @@ import {
   type Edge,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import CerebroNode, { type CerebroNodeData } from './CerebroNode';
+import SynapseNode, { type SynapseNodeData } from './SynapseNode';
 import CollapsedNode from './CollapsedNode';
 import NeuralLink from './NeuralLink';
-import { useCerebroLayout } from '../../hooks/useCerebroLayout';
+import { useSynapseLayout } from '../../hooks/useSynapseLayout';
 import { useAppStore } from '../../state/store';
 import { headerLabels } from '../../labels/modeLabels';
 
-const nodeTypes = { cerebro: CerebroNode, collapsed: CollapsedNode };
+const nodeTypes = { synapse: SynapseNode, collapsed: CollapsedNode };
 const edgeTypes = { neural: NeuralLink };
 
-function CerebroFlowInner() {
-  const { positions, tethers } = useCerebroLayout();
+function SynapseFlowInner() {
+  const { positions, tethers } = useSynapseLayout();
   const agents = useAppStore((s) => s.agents);
   const hoveredNodeId = useAppStore((s) => s.hoveredNodeId);
   const collapsedAgents = useAppStore((s) => s.collapsedAgents);
@@ -32,7 +32,6 @@ function CerebroFlowInner() {
     if (!hoveredNodeId) return null;
     const pathIds = new Set<string>();
     let current = hoveredNodeId;
-    // Walk up parentId chain
     while (current) {
       pathIds.add(current);
       const agent = agents[current];
@@ -53,7 +52,7 @@ function CerebroFlowInner() {
     return set;
   }, [agents]);
 
-  // Critical path edge set (edges between consecutive critical path nodes)
+  // Critical path edge set
   const criticalEdgeIds = useMemo(() => {
     if (!criticalPath) return null;
     const edgeIds = new Set<string>();
@@ -71,9 +70,7 @@ function CerebroFlowInner() {
       const isCollapsedSynthetic = pos.agent.type === 'collapsed';
 
       if (isCollapsedSynthetic) {
-        // Parse collapsed agent info from the synthetic agent
         const parentAgentId = pos.agent.parentId || '';
-        // Get child stats from the latestDetail or from the agent fields
         return {
           id: pos.agent.id,
           type: 'collapsed',
@@ -81,7 +78,7 @@ function CerebroFlowInner() {
           data: {
             agentId: pos.agent.id,
             parentAgentId,
-            childCount: pos.agent.toolCount, // repurposed for childCount in synthetic node
+            childCount: pos.agent.toolCount,
             completedCount: 0,
             errorCount: pos.agent.errorCount,
             latestDetail: pos.latestDetail,
@@ -93,7 +90,7 @@ function CerebroFlowInner() {
 
       return {
         id: pos.agent.id,
-        type: 'cerebro',
+        type: 'synapse',
         position: { x: pos.x, y: pos.y },
         data: {
           agentId: pos.agent.id,
@@ -116,7 +113,7 @@ function CerebroFlowInner() {
           isCollapsed: collapsedAgents.has(pos.agent.id),
           isOnCriticalPath: criticalPath?.has(pos.agent.id) ?? false,
           isCriticalPathActive,
-        } satisfies CerebroNodeData,
+        } satisfies SynapseNodeData,
       };
     });
   }, [positions, criticalPath, isCriticalPathActive, agentsWithChildren, collapsedAgents]);
@@ -139,7 +136,7 @@ function CerebroFlowInner() {
     }));
   }, [tethers, criticalEdgeIds, isCriticalPathActive]);
 
-  // Auto fitView when nodes change count (new agents appear)
+  // Auto fitView when nodes change count
   const nodeCount = nodes.length;
   useEffect(() => {
     if (nodeCount > 0 && nodeCount !== prevCountRef.current) {
@@ -155,7 +152,7 @@ function CerebroFlowInner() {
   const labels = headerLabels;
 
   const onNodeClick = useCallback(() => {
-    // Node click handled inside CerebroNode
+    // Node click handled inside SynapseNode
   }, []);
 
   return (
@@ -211,10 +208,10 @@ function CerebroFlowInner() {
   );
 }
 
-export default function CerebroCanvas() {
+export default function SynapseCanvas() {
   return (
     <ReactFlowProvider>
-      <CerebroFlowInner />
+      <SynapseFlowInner />
     </ReactFlowProvider>
   );
 }
