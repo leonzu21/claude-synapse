@@ -27,7 +27,7 @@ async function main() {
   app.get('/health', async () => ({ status: 'ok', uptime: process.uptime() }));
 
   // Serve dashboard static files if available
-  const dashboardDist = resolve(__dirname, '../../dashboard/dist');
+  const dashboardDist = resolve(process.env.SYNAPSE_DASHBOARD_DIR || resolve(__dirname, '../../dashboard/dist'));
   if (existsSync(dashboardDist)) {
     await app.register(fastifyStatic, {
       root: dashboardDist,

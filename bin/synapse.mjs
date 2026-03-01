@@ -9,18 +9,22 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const PORT = process.env.PORT || 4800;
 
+// Detect whether we're running from the npm-published bundle or from source
+const bundledCollector = resolve(ROOT, 'dist', 'collector.mjs');
+const bundledDashboard = resolve(ROOT, 'dist', 'dashboard');
+const isBundled = existsSync(bundledCollector);
+
 const args = process.argv.slice(2);
 const command = args[0];
 
 if (command === 'init') {
-  // Run the init/setup flow
   const initPath = resolve(ROOT, 'bin', 'init.mjs');
   const { default: init } = await import(initPath);
   await init();
   process.exit(0);
 }
 
-function isBuilt() {
+function isDevBuilt() {
   return (
     existsSync(resolve(ROOT, 'packages/protocol/dist/index.js')) &&
     existsSync(resolve(ROOT, 'apps/collector/dist/index.js')) &&
@@ -35,16 +39,30 @@ function build() {
 }
 
 function start() {
-  if (!isBuilt()) {
-    build();
+  let entryPoint;
+  let dashboardDir;
+
+  if (isBundled) {
+    // npm-installed mode: use pre-bundled files
+    entryPoint = bundledCollector;
+    dashboardDir = bundledDashboard;
+  } else {
+    // Dev mode: build from source if needed
+    if (!isDevBuilt()) build();
+    entryPoint = resolve(ROOT, 'apps/collector/dist/index.js');
+    dashboardDir = resolve(ROOT, 'apps/dashboard/dist');
   }
 
   console.log(`[synapse] Starting on http://localhost:${PORT}`);
 
-  const collector = spawn('node', [resolve(ROOT, 'apps/collector/dist/index.js')], {
+  const collector = spawn('node', [entryPoint], {
     cwd: ROOT,
     stdio: 'inherit',
-    env: { ...process.env, PORT: String(PORT) },
+    env: {
+      ...process.env,
+      PORT: String(PORT),
+      SYNAPSE_DASHBOARD_DIR: dashboardDir,
+    },
   });
 
   collector.on('close', (code) => {
