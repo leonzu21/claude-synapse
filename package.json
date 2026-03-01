@@ -1,8 +1,15 @@
 {
   "name": "claude-synapse",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Neural network visualization for Claude Code agent sessions",
-  "keywords": ["claude", "claude-code", "agent", "visualization", "neural-network", "hooks"],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "agent",
+    "visualization",
+    "neural-network",
+    "hooks"
+  ],
   "license": "MIT",
   "author": "Iulian Leon",
   "repository": {
